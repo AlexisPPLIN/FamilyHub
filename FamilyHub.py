@@ -36,6 +36,20 @@ programdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__fil
 
 locale.setlocale(locale.LC_ALL,'fr_FR.UTF-8')
 
+# Use bugsnag as error reporting tool
+import bugsnag
+import logging
+from bugsnag.handlers import BugsnagHandler
+bugsnag.configure(
+    api_key=os.getenv('BUGSNAG_TOKEN'),
+    project_root=rootdir,
+)
+
+logger = logging.getLogger("logger")
+handler = BugsnagHandler()
+handler.setLevel(logging.ERROR)
+logger.addHandler(handler)
+
 def DrawText(Himage,text,font,x,y,color=0):
     x = x - font.getoffset(text)[0]
     y = y - font.getoffset(text)[1]
@@ -212,7 +226,7 @@ def DrawTasks(Himage):
 
     RobotoLight36 = ImageFont.truetype(os.path.join(fontdir, 'Roboto/Roboto-Light.ttf'), 36)
     RobotoLight14 = ImageFont.truetype(os.path.join(fontdir, 'Roboto/Roboto-Light.ttf'), 14)
-    DrawText(Himage,'semaine / week-end',RobotoLight14,113,133)
+    DrawText(Himage,'sans / avec les filles',RobotoLight14,113,133)
 
     # Dishwasher
     dishwasherImg = Image.open(os.path.join(imgdir,'tasks/dishwasher.png'))
@@ -342,8 +356,7 @@ def GenerateCalendarCards(Himage):
         Himage.paste(card,(400,130+(index*50)))
 
 def RefreshScreen():
-    epd.Clear()
-
+    # Generate new screen
     Himage = Image.new('1', (epd.width, epd.height), 255)
     DrawAgendaTop(Himage)
     DrawDate(Himage)
@@ -351,6 +364,11 @@ def RefreshScreen():
     DrawTasks(Himage)
     GenerateCalendarCards(Himage)
     DrawGird(Himage)
+
+    # Clear screen
+    epd.Clear()
+    
+    # Display generated screen
     epd.display(epd.getbuffer(Himage))
     pass
 
@@ -365,8 +383,8 @@ try:
 
     ttreactor.run()
 
-except IOError as e:
-    print(e)
+except Exception as e:
+    bugsnag.notify(e)
     
 except KeyboardInterrupt:    
     print("ctrl + c:")

@@ -7,4 +7,5 @@ google-auth-oauthlib
 oauth2client
 Twisted
 service_identity
-dotenv
+python-dateutil
+bugsnag

@@ -19,6 +19,8 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 from pyowm import OWM
 from dateutil.parser import parse as dtparse
 from twisted.internet import task as ttask, reactor as ttreactor
+import urllib.request
+import time
 
 # Google API
 import datetime
@@ -49,6 +51,14 @@ logger = logging.getLogger("logger")
 handler = BugsnagHandler()
 handler.setLevel(logging.ERROR)
 logger.addHandler(handler)
+
+def checkInternetUrllib(url='http://google.com', timeout=3):
+    try:
+        urllib.request.urlopen(url, timeout=timeout)
+        return True
+    except Exception as e:
+        print(e)
+        return False
 
 def DrawText(Himage,text,font,x,y,color=0):
     x = x - font.getoffset(text)[0]
@@ -162,8 +172,11 @@ def GenerateWeekProgramOrder(nbMembers):
     return week
 
 def GenerateWeekProgram():
-    normal_members = ["Alexis","Lucien","Zéa"]
-    weekend_members = ["Alexis","Lucien","Zéa","Lilou","Maëlle"]
+    config_file = open('members.json','r')
+    config = json.load(config_file)
+
+    normal_members = config['week']
+    weekend_members = config['weekend']
 
     normal_program = GenerateWeekProgramOrder(len(normal_members))
     weekend_program = GenerateWeekProgramOrder(len(weekend_members))
@@ -286,6 +299,7 @@ def GenerateCalendarCard(start_date,end_date,title,dark):
 
     return CardImage
 
+
 def GetCalendarEvents():
     print('[Calendar API] Get last events')
     creds = None
@@ -308,7 +322,7 @@ def GetCalendarEvents():
         with open(tokendir,'wb') as token:
             pickle.dump(creds,token)
     
-    service = build('calendar','v3',credentials=creds)
+    service = build('calendar','v3',credentials=creds,cache_discovery=False)
 
     # Call the Calendar API
     now = datetime.datetime.utcnow().isoformat() + 'Z'
@@ -355,16 +369,36 @@ def GenerateCalendarCards(Himage):
     for index,card in enumerate(cards):
         Himage.paste(card,(400,130+(index*50)))
 
-def RefreshScreen():
+def RefreshScreenOnline():
     # Generate new screen
     Himage = Image.new('1', (epd.width, epd.height), 255)
+
     DrawAgendaTop(Himage)
     DrawDate(Himage)
     DrawWeather(Himage)
     DrawTasks(Himage)
     GenerateCalendarCards(Himage)
     DrawGird(Himage)
+    
+    RefreshScreen(Himage)
 
+def RefreshScreenOffline():
+    Himage = Image.new('1', (epd.width, epd.height), 255)
+
+    RobotoBold30 = ImageFont.truetype(os.path.join(fontdir, 'Roboto/Roboto-Bold.ttf'), 30)
+    RobotoLight18 = ImageFont.truetype(os.path.join(fontdir, 'Roboto/Roboto-Light.ttf'), 18)
+
+    offlineLogo = Image.open(os.path.join(imgdir,'events/internet_off.png'))
+    refreshTime = os.getenv('REFRESH_SECONDS_OFFLINE')
+
+    Himage.paste(offlineLogo,(350,140),offlineLogo)
+    DrawText(Himage,"Connection internet indisponible",RobotoBold30,180,242)
+    DrawText(Himage,"Tentative de re-connection dans "+refreshTime+"s",RobotoLight18,262,288)
+    DrawText(Himage,"(servez vous une tasse de café en attendant)",RobotoLight18,224,380)
+
+    RefreshScreen(Himage)
+
+def RefreshScreen(Himage):
     # Clear screen
     epd.Clear()
     
@@ -377,13 +411,16 @@ try:
     print("init and Clear")
     epd.init()
 
-    timeout = float(os.getenv('REFRESH_SECONDS'))
-    l = ttask.LoopingCall(RefreshScreen)
-    l.start(timeout)
-
-    ttreactor.run()
+    while True:
+        if(checkInternetUrllib()):
+            RefreshScreenOnline()
+            time.sleep(int(os.getenv('REFRESH_SECONDS')))
+        else:
+            RefreshScreenOffline()
+            time.sleep(int(os.getenv('REFRESH_SECONDS_OFFLINE')))
 
 except Exception as e:
+    print(e)
     bugsnag.notify(e)
     
 except KeyboardInterrupt:    

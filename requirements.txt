@@ -9,3 +9,4 @@ Twisted
 service_identity
 python-dateutil
 bugsnag
+urllib3

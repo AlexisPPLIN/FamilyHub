@@ -19,6 +19,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 from pyowm import OWM
 from dateutil.parser import parse as dtparse
 from twisted.internet import task as ttask, reactor as ttreactor
+from os import path
 import urllib.request
 import time
 
@@ -172,6 +173,10 @@ def GenerateWeekProgramOrder(nbMembers):
     return week
 
 def GenerateWeekProgram():
+    # Wait for os to get member file
+    while not path.exists('members.json'):
+        time.sleep(500)
+        
     config_file = open('members.json','r')
     config = json.load(config_file)
 

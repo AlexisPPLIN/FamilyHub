@@ -5,6 +5,7 @@ import logging
 import locale
 import time
 import logging
+import traceback
 
 # Load dotenv
 from dotenv import load_dotenv
@@ -58,6 +59,7 @@ try:
     
 except Exception as e:
     print(e)
+    traceback.print_exc()
     
 except KeyboardInterrupt:    
     print("ctrl + c:")

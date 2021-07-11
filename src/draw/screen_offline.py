@@ -3,8 +3,8 @@ import os
 from .util import Image,ImageFont,imgdir,DrawText,fontdir
 from .screen_refresh import RefreshScreen
 
-def RefreshScreenOffline(epd):
-    Himage = Image.new('1', (epd.width, epd.height), 255)
+def RefreshScreenOffline(screen):
+    Himage = Image.new('1', (screen.width, screen.height), 255)
 
     RobotoBold30 = ImageFont.truetype(os.path.join(fontdir, 'Roboto/Roboto-Bold.ttf'), 30)
     RobotoLight18 = ImageFont.truetype(os.path.join(fontdir, 'Roboto/Roboto-Light.ttf'), 18)
@@ -17,4 +17,4 @@ def RefreshScreenOffline(epd):
     DrawText(Himage,"Tentative de re-connection dans "+refreshTime+"s",RobotoLight18,262,288)
     DrawText(Himage,"(servez vous une tasse de café en attendant)",RobotoLight18,224,380)
 
-    RefreshScreen(epd,Himage)
+    RefreshScreen(screen,Himage)

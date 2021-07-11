@@ -1,7 +1,4 @@
-def RefreshScreen(epd,Himage):
+def RefreshScreen(screen,Himage):
     # Clear screen
-    epd.Clear()
-    
-    # Display generated screen
-    epd.display(epd.getbuffer(Himage))
+    screen.print(Himage)
     pass

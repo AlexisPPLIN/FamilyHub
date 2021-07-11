@@ -10,3 +10,4 @@ service_identity
 python-dateutil
 bugsnag
 urllib3
+Pillow

@@ -7,15 +7,15 @@ from .weather import DrawWeather
 from .task import DrawTasks
 from .calendar import GenerateCalendarCards
 
-def RefreshScreenOnline(epd):
+def RefreshScreenOnline(screen):
     # Generate new screen
-    Himage = Image.new('1', (epd.width, epd.height), 255)
+    Himage = Image.new('1', (screen.width, screen.height), 255)
 
     DrawAgendaTop(Himage)
     DrawDate(Himage)
     DrawWeather(Himage)
     DrawTasks(Himage)
-    GenerateCalendarCards(Himage)
+    #GenerateCalendarCards(Himage)
     DrawGird(Himage)
     
-    RefreshScreen(epd,Himage)
+    RefreshScreen(screen,Himage)

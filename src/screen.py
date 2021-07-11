@@ -7,6 +7,7 @@ class Screen:
 
     def __init__(self,type,driver = None):
         self.type = type
+        self.driver = driver
 
     def print(self,Himage):
         print("Printing screen...")

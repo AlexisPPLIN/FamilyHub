@@ -24,7 +24,7 @@ sudo mv 'e-Paper/RaspberryPi_JetsonNano/python/lib' ../lib
 
 # Install pip and requirements
 sudo apt-get update
-sudo apt-get install -y python3-pip
+sudo apt-get install -y python3 python3-pip
 sudo pip3 install -r ../requirements.txt
 
 # remove temp folder
